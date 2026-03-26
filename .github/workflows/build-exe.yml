@@ -3,46 +3,36 @@ name: Build Windows EXE (Launcher)
 on:
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # avoid Node.js 20 warning
-
 jobs:
   build_launcher_exe:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ Publish EXE projects (paths relative to repo root)
-      - name: Publish EXE projects
+      - name: Publish EXE
         run: |
-          # Go to root of repo
           Set-Location ${{ github.workspace }}
-
-          # Find all .csproj files in repo
-          Get-ChildItem -Path . -Recurse -Filter *.csproj | ForEach-Object {
-            Write-Host "Publishing project: $($_.FullName)"
+          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
+            Write-Host "Publishing $($_.FullName)"
             dotnet restore $_.FullName
             dotnet publish $_.FullName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
           }
 
-      # 4️⃣ Debug: list all EXEs built (root-relative)
-      - name: List all EXEs
+      - name: Debug EXEs
         run: |
           Set-Location ${{ github.workspace }}
-          Get-ChildItem -Path . -Recurse -Filter *.exe
+          Write-Host "Checking for EXEs..."
+          Get-ChildItem -Recurse -Filter *.exe | ForEach-Object { Write-Host $_.FullName }
 
-      # 5️⃣ Upload EXE(s) as artifact (root-relative path)
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: launcher-exe
-          path: '**/bin/Release/**/publish/*.exe'
+          path: 'apps/launcher-dotnet/bin/Release/net8.0/win-x64/publish/*.exe'
