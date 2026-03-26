@@ -8,26 +8,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Debug paths
-        run: |
-          cd
-          dir
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Build project (auto-detect)
+      - name: Build project
         run: |
-          for /r %i in (*.csproj) do (
-            echo Building %i
-            dotnet restore "%i"
-            dotnet publish "%i" -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
-          )
+          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
+            dotnet restore $_.FullName
+            dotnet publish $_.FullName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+          }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
