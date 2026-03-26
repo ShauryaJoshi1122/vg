@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Build Windows EXE (Launcher)
 
 on:
   workflow_dispatch:
@@ -9,17 +9,27 @@ env:
 jobs:
   build_launcher_exe:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
-      - name: Build project
+
+      - name: Publish EXE
         run: |
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
+            Write-Host "Publishing $($_.FullName)"
             dotnet publish $_.FullName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
           }
-      - uses: actions/upload-artifact@v4
+
+      - name: Debug: show all EXE files
+        run: Get-ChildItem -Recurse -Filter *.exe
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
         with:
           name: launcher-exe
-          path: '**/publish/*.exe'
+          path: '**/bin/Release/**/publish/*.exe'
