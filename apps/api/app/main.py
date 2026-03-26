@@ -13,3 +13,4 @@ app.include_router(videos_router, tags=["videos"])
 app.include_router(projects_router, prefix="/projects", tags=["projects"])
 app.include_router(billing_router, prefix="/billing", tags=["billing"])
 
+pyinstaller --onefile main.py
