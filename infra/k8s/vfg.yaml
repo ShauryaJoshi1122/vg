@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videogen-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: videogen-api
+  template:
+    metadata:
+      labels:
+        app: videogen-api
+    spec:
+      containers:
+        - name: api
+          image: videogen-api
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: REDIS_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: JWT_SECRET
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videogen-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: videogen-worker
+  template:
+    metadata:
+      labels:
+        app: videogen-worker
+    spec:
+      containers:
+        - name: worker
+          image: videogen-worker
+          ports:
+            - containerPort: 3001
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: REDIS_URL
+            - name: WORKER_CONCURRENCY
+              value: "4"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videogen-renderer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: videogen-renderer
+  template:
+    metadata:
+      labels:
+        app: videogen-renderer
+    spec:
+      containers:
+        - name: renderer
+          image: videogen-renderer
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: REDIS_URL
+            - name: S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: S3_BUCKET
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: S3_SECRET_KEY
+            - name: S3_ENDPOINT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: videogen-secrets
+                  key: S3_ENDPOINT_URL
+            - name: RENDER_CONCURRENCY
+              value: "1"
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: videogen-worker-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: videogen-worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+

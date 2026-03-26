@@ -1,0 +1,48 @@
+{
+  "name": "desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "ts-node src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "electron .",
+    "package": "electron-builder --win --x64"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "32.1.2",
+    "electron-builder": "25.1.8",
+    "@types/node": "22.7.4",
+    "@types/electron": "1.6.13",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
+  },
+  "build": {
+    "appId": "com.flowbyearthin.saas",
+    "productName": "Flow by Earthin",
+    "files": [
+      "dist/**/*",
+      ".env.example",
+      "infra/docker-compose.yml",
+      "infra/**/*",
+      "apps/web/**/*",
+      "apps/api/**/*",
+      "apps/worker/**/*",
+      "apps/renderer/**/*",
+      "packages/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "infra/docker-compose.yml",
+        "to": "infra/docker-compose.yml"
+      }
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true
+  }
+}
+

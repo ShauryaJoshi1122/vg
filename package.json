@@ -1,0 +1,15 @@
+{
+  "name": "flowbyearthin-saas",
+  "description": "Flow by Earthin - AI video generation SaaS",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo \"Use docker-compose for dev\"",
+    "lint": "echo \"Add linting per app\""
+  }
+}
+

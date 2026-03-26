@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        run: docker build -t videogen-api -f apps/api/Dockerfile .
+
+      - name: Build worker image
+        run: docker build -t videogen-worker -f apps/worker/Dockerfile .
+
+      - name: Build renderer image
+        run: docker build -t videogen-renderer -f apps/renderer/Dockerfile .
+
+      - name: Build web image
+        run: docker build -t videogen-web -f apps/web/Dockerfile .
+
