@@ -9,25 +9,27 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
-        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Build exe
+      - name: Find python file
+        id: findpy
         shell: bash
         run: |
-          pyinstaller --onefile main.py || pyinstaller --onefile *.py
+          FILE=$(ls *.py | head -n 1)
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+          echo "Found $FILE"
+
+      - name: Build exe
+        run: pyinstaller --onefile ${{ steps.findpy.outputs.file }}
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
