@@ -1,38 +1,27 @@
-name: Build Windows EXE (Launcher)
+name: Build EXE
 
-on:
-  workflow_dispatch:
+on: [push]
 
 jobs:
-  build_launcher_exe:
+  build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Publish EXE
-        run: |
-          Set-Location ${{ github.workspace }}
-          Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            Write-Host "Publishing $($_.FullName)"
-            dotnet restore $_.FullName
-            dotnet publish $_.FullName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
-          }
+    - name: Install dependencies
+      run: pip install pyinstaller
 
-      - name: Debug EXEs
-        run: |
-          Set-Location ${{ github.workspace }}
-          Write-Host "Checking for EXEs..."
-          Get-ChildItem -Recurse -Filter *.exe | ForEach-Object { Write-Host $_.FullName }
+    - name: Build exe
+      run: pyinstaller --onefile main.py
 
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
-        with:
-          name: launcher-exe
-          path: 'apps/launcher-dotnet/bin/Release/net8.0/win-x64/publish/*.exe'
+    - name: Upload exe
+      uses: actions/upload-artifact@v3
+      with:
+        name: app
+        path: dist/*.exe
