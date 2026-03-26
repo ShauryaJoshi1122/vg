@@ -11,18 +11,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show repo structure
-        run: dir /s
+      - name: Debug paths
+        run: |
+          cd
+          dir
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Find project and build
+      - name: Build project (auto-detect)
         run: |
           for /r %i in (*.csproj) do (
-            echo Found project: %i
+            echo Building %i
             dotnet restore "%i"
             dotnet publish "%i" -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
           )
