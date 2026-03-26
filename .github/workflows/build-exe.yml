@@ -6,9 +6,13 @@ on:
 jobs:
   build_launcher_exe:
     runs-on: windows-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Debug folder structure
+        run: dir
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -16,8 +20,8 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Publish single-file exe
+        working-directory: apps/launcher-dotnet
         run: |
-          cd apps/launcher-dotnet
           dotnet restore
           dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
 
@@ -26,4 +30,3 @@ jobs:
         with:
           name: FlowByEarthinLauncher-win-x64
           path: apps/launcher-dotnet/bin/Release/net8.0/win-x64/publish/
-
