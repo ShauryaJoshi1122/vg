@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
 env:
+  # Use Node.js 24 to avoid deprecation warning
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -11,25 +12,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1️⃣ Checkout the repo
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      # 2️⃣ Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish EXE
+      # 3️⃣ Publish all EXE projects
+      - name: Publish EXE projects
         run: |
+          # Find all .csproj files
           Get-ChildItem -Recurse -Filter *.csproj | ForEach-Object {
-            Write-Host "Publishing $($_.FullName)"
+            Write-Host "Publishing project: $($_.FullName)"
+            dotnet restore $_.FullName
             dotnet publish $_.FullName -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
           }
 
-      - name: Debug: show all EXE files
+      # 4️⃣ Debug: show all EXE files built
+      - name: List all EXEs
         run: Get-ChildItem -Recurse -Filter *.exe
 
+      # 5️⃣ Upload EXE(s) as artifact
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: launcher-exe
+          # This pattern finds all publish folders with EXEs
           path: '**/bin/Release/**/publish/*.exe'
