@@ -11,22 +11,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug folder structure
-        run: dir
+      - name: Show repo structure
+        run: dir /s
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish single-file exe
-        working-directory: apps/launcher-dotnet
+      - name: Find project and build
         run: |
-          dotnet restore
-          dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+          for /r %i in (*.csproj) do (
+            echo Found project: %i
+            dotnet restore "%i"
+            dotnet publish "%i" -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+          )
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FlowByEarthinLauncher-win-x64
-          path: apps/launcher-dotnet/bin/Release/net8.0/win-x64/publish/
+          name: launcher-exe
+          path: '**/publish/'
